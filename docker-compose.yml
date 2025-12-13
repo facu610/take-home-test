@@ -1,0 +1,10 @@
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: loan_sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Passw0rd!fm"
+    ports:
+      - "1433:1433"
