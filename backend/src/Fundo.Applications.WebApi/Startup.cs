@@ -28,6 +28,12 @@ namespace Fundo.Applications.WebApi
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
+
+            using ( var scope = app.ApplicationServices.CreateScope() )
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                DbInitializer.Initialize(dbContext);
+            }
         }
     }
 }
