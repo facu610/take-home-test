@@ -34,7 +34,7 @@ namespace Fundo.Applications.WebApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult> GetLoanById(int id)
         {
-            var loan = loanService.GetLoanByIdAsync(id);
+            var loan = await loanService.GetLoanByIdAsync(id);
 
             if (loan == null) return NotFound();
 

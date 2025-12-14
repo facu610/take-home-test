@@ -23,7 +23,7 @@ namespace Fundo.Applications.WebApi.Services
                 .ToListAsync();
         }
 
-        public async Task<Loan> GetLoanByIdAsync(int id)
+        public async Task<Loan?> GetLoanByIdAsync(int id)
         {
             return await dbContext.Loans
                 .FirstOrDefaultAsync(x => x.Id == id);
