@@ -82,6 +82,7 @@ Develop a **lightweight Angular app** to interact with the backend
 
 Candidates are encouraged to include a `README.md` file in their repository detailing their implementation approach, any challenges they faced, features they couldn't complete, and any improvements they would make given more time. Ideally, the implementation should be completed within **two days** of starting the test.
 
+---
 
 ## Implementation Approach (Day 1)
 
@@ -144,10 +145,86 @@ By the end of Day 1:
 
 ---
 
-## Scope & Time Constraints
+## Implementation Approach (Day 2)
 
-The implementation was structured to fit within the recommended **two-day timeframe**:
-- **Day 1:** Backend setup, database, migrations, and infrastructure.
-- **Day 2:** Business logic, API endpoints, frontend integration, testing, and documentation.
+The second day focused on delivering end-to-end functionality: implementing business logic, exposing endpoints, validating behavior through tests, and integrating the backend with a Angular frontend.
 
-This approach prioritizes correctness, reproducibility, and maintainability over premature feature expansion.
+The main goals for Day 2 were:
+- Implement the complete Loan Management API
+- Apply business rules in a dedicated service layer
+- Validate behavior through unit and integration tests
+- Integrate the backend with an Angular frontend
+- Keep the solution simple, readable, and aligned with the challenge scope
+
+---
+
+### Backend – Business Logic & API Endpoints
+
+- Implemented all required RESTful endpoints:
+  - `GET /loans` – list all loans
+  - `GET /loans/{id}` – retrieve loan details
+  - `POST /loans` – create a new loan
+  - `POST /loans/{id}/payment` – register a loan payment
+- Introduced a `LoanService` to encapsulate business logic and keep controllers thin.
+- Applied domain rules such as:
+  - Initial balance equals loan amount
+  - Preventing overpayments
+  - Marking loans as `Paid` when the balance reaches zero
+- Ensured proper HTTP semantics (e.g., `201 Created` with `Location` header when creating resources).
+
+---
+
+### Seed Data
+
+- Added database seed logic executed at application startup.
+- The seed checks for existing data before inserting records, ensuring:
+  - Data persistence across restarts
+  - Idempotent initialization
+- This allows the frontend to consume meaningful data without manual database setup.
+
+---
+
+### Testing Strategy
+
+- Implemented **unit tests** for the `LoanService` using **xUnit** and **EF Core InMemory**:
+  - Validated core business rules (loan creation, payments, edge cases).
+- Implemented **integration tests** using `WebApplicationFactory`:
+  - Verified API routing, serialization, status codes.
+  - Detected and fixed an async bug (`Task` being returned instead of awaited entity).
+- The combination of unit and integration tests ensures both correctness of logic and API stability.
+
+---
+
+### Frontend – Angular Integration
+
+- Integrated a Angular frontend.
+- Configured an Angular development proxy to avoid CORS issues without modifying backend configuration.
+- Replaced hardcoded UI data with live data fetched from the backend API.
+- Implemented a Material table to display loans with real-time values from the API.
+- Kept frontend logic intentionally simple to focus on backend integration and correctness.
+
+---
+
+## Challenges Faced & Solutions (Day 2)
+
+### Async Handling in Controllers
+- **Issue:** A controller method returned a `Task` instead of the awaited result, causing JSON serialization errors during integration testing.
+- **Solution:** Properly awaited asynchronous service calls, fixing both runtime behavior and test failures.
+
+### Angular CORS & API Integration
+- **Issue:** Browser-level CORS restrictions when calling the backend from Angular.
+- **Solution:** Configured Angular’s development proxy to transparently forward API requests to the backend.
+
+### Frontend–Backend Contract Alignment
+- **Issue:** Initial mismatch between frontend field names and backend DTOs.
+- **Solution:** Aligned the frontend model with the backend response to keep the API contract explicit and consistent.
+
+---
+
+## Current Status (End of Day 2)
+
+By the end of Day 2:
+- All backend endpoints are fully implemented and tested.
+- Business logic is encapsulated in a dedicated service layer.
+- Unit and integration tests validate both logic and API behavior.
+- The Angular frontend successfully consumes live data from the backend.
