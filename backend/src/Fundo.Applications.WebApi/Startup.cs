@@ -21,6 +21,8 @@ namespace Fundo.Applications.WebApi
             
             services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("Default")));
+
+            services.AddScoped<Services.LoanService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
