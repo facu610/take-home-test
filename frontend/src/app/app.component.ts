@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+
+import { Loan } from './models/loan';
+import { LoanService } from './services/loan.service';
 
 @Component({
   selector: 'app-root',
@@ -10,31 +13,36 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   displayedColumns: string[] = [
-    'loanAmount',
+    'amount',
     'currentBalance',
-    'applicant',
+    'applicantName',
     'status',
   ];
-  loans = [
-    {
-      loanAmount: 25000.00,
-      currentBalance: 18750.00,
-      applicant: 'John Doe',
-      status: 'active',
-    },
-    {
-      loanAmount: 15000.00,
-      currentBalance: 0,
-      applicant: 'Jane Smith',
-      status: 'paid',
-    },
-    {
-      loanAmount: 50000.00,
-      currentBalance: 32500.00,
-      applicant: 'Robert Johnson',
-      status: 'active',
-    },
-  ];
+
+  loans: Loan[] = [];
+  error: string | null = null;
+
+  constructor(private loanService: LoanService) { }
+
+  ngOnInit(): void {
+    this.loadLoans();
+  }
+
+  loadLoans(): void {
+
+    this.loanService.getLoans().subscribe({
+      next: (data: Loan[]) => {
+        this.loans = data;
+      },
+      error: (err) => {
+        this.error = 'Failed to load loans. Please try again later.';
+      },
+    });
+  }
+
+  statusLabel(status: number): string {
+    return status === 1 ? 'paid' : 'active';
+  }
 }

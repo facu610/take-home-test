@@ -2,17 +2,27 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Fundo.Applications.WebApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fundo.Applications.WebApi
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration) { }
+        public IConfiguration Configuration { get; }
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            
+            services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("Default")));
+
+            services.AddScoped<Services.LoanService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -20,6 +30,12 @@ namespace Fundo.Applications.WebApi
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
+
+            using ( var scope = app.ApplicationServices.CreateScope() )
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                DbInitializer.Initialize(dbContext);
+            }
         }
     }
 }
