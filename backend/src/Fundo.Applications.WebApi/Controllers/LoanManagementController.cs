@@ -1,12 +1,10 @@
-﻿using Fundo.Applications.WebApi.Data;
-using Fundo.Applications.WebApi.Domain;
+﻿using Fundo.Applications.WebApi.Domain;
 using Fundo.Applications.WebApi.Dtos;
 using Fundo.Applications.WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Fundo.Applications.WebApi.Controllers
@@ -15,13 +13,13 @@ namespace Fundo.Applications.WebApi.Controllers
     [Route("loans")]
     public class LoanManagementController : ControllerBase
     {
-        private readonly AppDbContext dbContext;
         private readonly LoanService loanService;
+        private readonly ILogger<LoanManagementController> logger;
 
-        public LoanManagementController(AppDbContext dbContext, LoanService loanService)
+        public LoanManagementController(LoanService loanService, ILogger<LoanManagementController> logger)
         {
-            this.dbContext = dbContext;
             this.loanService = loanService;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -36,7 +34,11 @@ namespace Fundo.Applications.WebApi.Controllers
         {
             var loan = await loanService.GetLoanByIdAsync(id);
 
-            if (loan == null) return NotFound();
+            if (loan == null)
+            {
+                logger.LogInformation("Loan {LoanId} not found", id);
+                return NotFound();
+            }
 
             return Ok(loan);
         }
@@ -47,18 +49,22 @@ namespace Fundo.Applications.WebApi.Controllers
             try
             {
                 var loan = await loanService.RegisterPaymentAsync(id, request.Amount);
+                logger.LogInformation("Registered payment of {Amount} for loan {LoanId}", request.Amount, id);
                 return Ok(loan);
             }
             catch (KeyNotFoundException)
             {
+                logger.LogWarning("Attempted payment for non-existent loan {LoanId}", id);
                 return NotFound();
             }
             catch (ArgumentException ex)
             {
+                logger.LogWarning(ex, "Invalid payment request for loan {LoanId}", id);
                 return BadRequest(ex.Message);
             }
             catch (InvalidOperationException ex)
             {
+                logger.LogWarning(ex, "Payment rejected for loan {LoanId}", id);
                 return BadRequest(ex.Message);
             }
         }
@@ -72,11 +78,13 @@ namespace Fundo.Applications.WebApi.Controllers
                     request.Amount,
                     request.ApplicantName);
 
+                logger.LogInformation("Created loan {LoanId} for applicant {ApplicantName}", loan.Id, request.ApplicantName);
                 return CreatedAtAction(nameof(GetLoanById), new { id = loan.Id }, loan);
 
             }
             catch (ArgumentException ex)
             {
+                logger.LogWarning(ex, "Invalid loan creation request for applicant {ApplicantName}", request.ApplicantName);
                 return BadRequest(ex.Message);
             }
         }

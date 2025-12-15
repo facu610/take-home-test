@@ -1,91 +1,108 @@
-# **Take-Home Test: Backend-Focused Full-Stack Developer (.NET C# & Angular)**
+# Loan Management System - Take Home Test
+Full-stack take-home implementation: .NET 6 Web API + SQL Server (Docker) + Angular.
 
-## **Objective**
+## Tech Stack
+- Backend: .NET 6 (ASP.NET Core), EF Core 6 (Code First + Migrations), SQL Server (Docker)
+- Frontend: Angular (standalone components), Angular Material, dev proxy to avoid CORS
+- Testing: xUnit; unit tests with EF Core InMemory; integration tests with WebApplicationFactory
 
-This take-home test evaluates your ability to develop and integrate a .NET Core (C#) backend with an Angular frontend, focusing on API design, database integration, and basic DevOps practices.
+## How to Run (Local)
+### Prerequisites
+- .NET SDK 6.x
+- Docker Desktop
+- Node.js + npm (for Angular)
 
-## **Instructions**
+### 1) Database (SQL Server via Docker)
+```bash
+docker compose up -d sqlserver
+```
+Provisioned at `localhost:1433` (Apple Silicon runs under `linux/amd64` emulation).
 
-1.  **Fork the provided repository** before starting the implementation.
-2.  Implement the requested features in your forked repository.
-3.  Once you have completed the implementation, **send the link** to your forked repository via email for review.
+### 2) Backend
+Restore dependencies:
+```bash
+dotnet restore backend/src/src.sln
+```
+Apply migrations:
+```bash
+cd backend/src
+dotnet ef database update --project Fundo.Applications.WebApi
+```
+Run API:
+```bash
+cd backend/src/Fundo.Applications.WebApi
+dotnet run
+```
+API available at `http://localhost:5000`.
 
-## **Task**
+### 3) API Endpoints
+- GET `/loans`
+- GET `/loans/{id}`
+- POST `/loans`
+- POST `/loans/{id}/payment`
 
-You will build a simple **Loan Management System** with a **.NET Core backend (C#)** exposing RESTful APIs and a **basic Angular frontend** consuming these APIs.
+Example:
+```bash
+curl http://localhost:5000/loans
+```
+
+### 4) Seed Data
+On startup, migrations run and sample data is inserted only when the database is empty.
+
+### 5) Frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+Runs on `http://localhost:4200`.
+
+**Proxy (no CORS):** `proxy.conf.json` forwards `/api/*` to the backend.
+```bash
+curl http://localhost:4200/api/loans
+```
+
+## Running Tests
+```bash
+dotnet test backend/src/src.sln
+```
+- Unit tests: EF Core InMemory
+- Integration tests: WebApplicationFactory + SQL Server
+
+## GitHub Actions CI
+- Restores
+- Builds
+- Runs unit tests only (integration tests skipped to avoid provisioning SQL Server in CI)
+
+## Implementation Log
+- Day 1: Domain + EF Core setup; Dockerized SQL Server; Code First migrations.
+- Day 2: API endpoints; seed data initializer; unit + integration tests; Angular integration; CORS-free proxy; CI pipeline.
+
+## Final Status
+Fully runnable locally, tested, documented, and CI-enabled for backend validation.
 
 ---
 
-## **Requirements**
+## Improvements / Next Steps (Not Implemented)
 
-### **1. Backend (API) - .NET Core**
+### Authentication & Authorization
+For the scope and time constraints of this take-home, I did not implement authentication.
 
-* Create a **RESTful API** in .NET Core to handle **loan applications**.
-* Implement the following endpoints:
-    * `POST /loans` → Create a new loan.
-    * `GET /loans/{id}` → Retrieve loan details.
-    * `GET /loans` → List all loans.
-    * `POST /loans/{id}/payment` → Deduct from `currentBalance`.
-* Loan example (feel free to improve it):
+Given more time, I would add:
+- Secure secrets management (environment variables + secrets store in CI/CD).
 
-    ```json
-    {
-        "amount": 1500.00, // Amount requested
-        "currentBalance": 500.00, // Remaining balance
-        "applicantName": "Maria Silva", // User name
-        "status": "active" // Status can be active or paid
-    }
-    ```
+### Frontend Testing (Angular)
+Due to time constraints, I did not implement automated tests for the Angular frontend.
 
-* Use **Entity Framework Core** with **SQL Server**.
-* Create seed data to populate the loans (the frontend will consume this).
-* Write **unit/integration tests for the API** (xUnit or NUnit).
-* **Dockerize** the backend and create a **Docker Compose** file.
-* Create a README with setup instructions.
+With additional time, I would add:
+- **Unit tests for components** focusing on:
+  - Data rendering (loan list, status labels, formatting).
+  - Interaction with services.
+- **Service tests** for `LoanService` using `HttpClientTestingModule` to mock backend API calls.
+- Basic **error handling tests** to ensure the UI behaves correctly on API failures.
 
-### **2. Frontend - Angular (Simplified UI)**  
-
-Develop a **lightweight Angular app** to interact with the backend
-
-#### **Features:**  
-- A **table** to display a list of existing loans.  
-
-#### **Mockup:**  
-[View Mockup](https://kzmgtjqt0vx63yji8h9l.lite.vusercontent.net/)  
-(*The design doesn’t need to be an exact replica of the mockup—it serves as a reference. Aim to keep it as close as possible.*)  
-
----
-
-## **Bonus (Optional, Not Required)**
-
-* **Improve error handling and logging** with structured logs.
-* Implement **authentication**.
-* Create a **GitHub Actions** pipeline for building and testing the backend.
-
----
-
-## **Evaluation Criteria**
-
-✔ **Code quality** (clean architecture, modularization, best practices).
-
-✔ **Functionality** (the API and frontend should work as expected).
-
-✔ **Security considerations** (authentication, validation, secure API handling).
-
-✔ **Testing coverage** (unit tests for critical backend functions).
-
-✔ **Basic DevOps implementation** (Docker for backend).
-
----
-
-## **Additional Information**
-
-Candidates are encouraged to include a `README.md` file in their repository detailing their implementation approach, any challenges they faced, features they couldn't complete, and any improvements they would make given more time. Ideally, the implementation should be completed within **two days** of starting the test.
-
----
 
 ## Implementation Approach (Day 1)
-
 The first day was focused on establishing a solid and reproducible backend foundation before implementing business logic or UI features.
 
 The main goals for Day 1 were:
