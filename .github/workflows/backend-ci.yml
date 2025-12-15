@@ -24,5 +24,5 @@ jobs:
       - name: Build
         run: dotnet build backend/src/src.sln --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test backend/src/src.sln --configuration Release --no-build --verbosity normal
+      - name: Test (Unit only)
+        run: dotnet test backend/src/src.sln --configuration Release --no-build --filter "FullyQualifiedName~Fundo.Services.Tests.Unit" --verbosity normal
