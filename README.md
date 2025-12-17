@@ -245,3 +245,4 @@ By the end of Day 2:
 - Business logic is encapsulated in a dedicated service layer.
 - Unit and integration tests validate both logic and API behavior.
 - The Angular frontend successfully consumes live data from the backend.
+
